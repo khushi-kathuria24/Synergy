@@ -1,0 +1,14 @@
+{
+  "java.configuration.updateBuildConfiguration": "automatic",
+  "java.compile.nullAnalysis.mode": "automatic",
+  "java.project.sourcePaths": ["src/main/java"],
+  "java.project.outputPath": "target/classes",
+  "java.project.referencedLibraries": ["lib/**/*.jar"],
+  "java.dependency.packagePresentation": "hierarchical",
+  "java.dependency.syncWithFolderExplorer": true,
+  "java.format.enabled": true,
+  "editor.formatOnSave": true,
+  "java.completion.importOrder": ["java", "javax", "javafx", "com", "org"],
+  "java.project.explorer.showNonJavaResources": true,
+  "java.debug.settings.onBuildFailureProceed": true
+}

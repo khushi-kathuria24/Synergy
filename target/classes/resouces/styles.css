@@ -1,0 +1,263 @@
+/* Base Styles */
+.root {
+  -fx-background-color: linear-gradient(
+    to bottom right,
+    #e6f2ff,
+    #ffffff,
+    #f0f8ff
+  );
+  -fx-font-family: "Segoe UI", Arial, sans-serif;
+  -fx-background-size: 700% 700%;
+  -fx-animation: gradient 15s ease infinite;
+}
+
+/* Text Input Styles */
+.text-input,
+.input-field {
+  -fx-background-color: rgba(255, 255, 255, 0.9);
+  -fx-border-color: #b0c4de;
+  -fx-border-radius: 20;
+  -fx-background-radius: 20;
+  -fx-padding: 10;
+  -fx-font-size: 14px;
+  -fx-pref-height: 35px;
+  -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.05), 5, 0, 0, 1);
+  -fx-transition: all 0.3s ease;
+}
+
+.text-input:focused,
+.input-field:focused {
+  -fx-border-color: #0078d7;
+  -fx-border-width: 2;
+  -fx-effect: dropshadow(gaussian, rgba(0, 120, 215, 0.2), 10, 0, 0, 0);
+  -fx-background-color: white;
+}
+
+/* Password Field Styles */
+.password-field-container {
+  -fx-spacing: 5;
+}
+
+.password-input-box {
+  -fx-background-color: transparent;
+  -fx-background-radius: 20;
+  -fx-border-radius: 20;
+  -fx-alignment: center-left;
+}
+
+.password-visibility-toggle {
+  -fx-background-color: transparent;
+  -fx-text-fill: #888888;
+  -fx-font-size: 16px;
+  -fx-padding: 0 10 0 0;
+  -fx-cursor: hand;
+}
+
+.password-visibility-toggle:hover {
+  -fx-text-fill: #0078d7;
+}
+
+.password-field,
+.visible-password-field {
+  -fx-background-color: transparent;
+  -fx-border: none;
+}
+
+/* Button Styles */
+.button,
+.primary-button {
+  -fx-background-color: linear-gradient(to right, #0078d7, #1e90ff);
+  -fx-text-fill: white;
+  -fx-font-size: 14px;
+  -fx-padding: 10 20;
+  -fx-background-radius: 20;
+  -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 10, 0, 0, 2);
+  -fx-cursor: hand;
+  -fx-transition: all 0.3s ease;
+}
+
+.button:hover,
+.primary-button:hover {
+  -fx-background-color: linear-gradient(to right, #005a9c, #0078d7);
+  -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 15, 0, 0, 3);
+  -fx-scale-x: 1.02;
+  -fx-scale-y: 1.02;
+}
+
+.button:pressed,
+.primary-button:pressed {
+  -fx-scale-x: 0.98;
+  -fx-scale-y: 0.98;
+  -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 5, 0, 0, 1);
+}
+
+/* Secondary Button Style */
+.secondary-button {
+  -fx-background-color: transparent;
+  -fx-text-fill: #0078d7;
+  -fx-border-color: transparent;
+  -fx-cursor: hand;
+  -fx-font-weight: bold;
+  -fx-transition: all 0.3s ease;
+}
+
+.secondary-button:hover {
+  -fx-text-fill: #81a4bd;
+  -fx-effect: dropshadow(gaussian, rgba(0, 120, 215, 0.2), 10, 0, 0, 0);
+  -fx-scale-x: 1.05;
+  -fx-scale-y: 1.05;
+}
+
+/* Container Styles */
+.form-container {
+  -fx-background-color: rgba(255, 255, 255, 0.95);
+  -fx-padding: 30px;
+  -fx-background-radius: 15px;
+  -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.1), 15, 0, 0, 5);
+  -fx-border-color: rgba(176, 196, 222, 0.3);
+  -fx-border-radius: 15px;
+  -fx-border-width: 1px;
+}
+
+.form-container:hover {
+  -fx-effect: dropshadow(gaussian, rgba(0, 120, 215, 0.15), 20, 0, 0, 7);
+  -fx-transition: all 0.3s ease;
+}
+
+/* Label Styles */
+.label,
+.field-label {
+  -fx-font-size: 14px;
+  -fx-text-fill: #666666;
+  /* -fx-font-weight: semi-bold; */
+}
+
+.title-label {
+  -fx-font-size: 28px;
+  -fx-font-weight: bold;
+  -fx-text-fill: #0078d7;
+  -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.1), 5, 0, 0, 1);
+}
+
+/* Background Styles */
+.signup-background {
+  -fx-background-color: linear-gradient(
+    to bottom right,
+    #e6f2ff,
+    #ffffff,
+    #f0f8ff
+  );
+  -fx-background-size: 400% 400%;
+  -fx-animation: gradient 15s ease infinite;
+}
+
+/* Input Container Styles */
+.input-container {
+  -fx-spacing: 5;
+}
+
+/* Animation Keyframes */
+@keyframes gradient {
+  0% {
+    -fx-background-position: 0% 50%;
+  }
+  50% {
+    -fx-background-position: 100% 50%;
+  }
+  100% {
+    -fx-background-position: 0% 50%;
+  }
+}
+
+/* Error and Success Message Styles */
+.error-label {
+  -fx-text-fill: #ff0000;
+  -fx-font-size: 12px;
+  -fx-padding: 5 0 0 0;
+}
+
+.success-message {
+  -fx-text-fill: #28a745;
+  -fx-font-size: 12px;
+  -fx-padding: 5 0 0 0;
+}
+
+/* Alert Dialog Styling */
+.dialog-pane {
+  -fx-background-color: white;
+}
+
+.dialog-pane:header .header-panel {
+  -fx-background-color: #0078d7;
+}
+
+.dialog-pane:header .header-panel .label {
+  -fx-text-fill: white;
+}
+
+.dialog-pane .button {
+  -fx-background-color: #0078d7;
+  -fx-text-fill: white;
+  -fx-wrap-text: true;
+  -fx-cursor: hand;
+  -fx-background-radius: 15;
+}
+
+.dialog-pane .button:hover {
+  -fx-background-color: #005a9c;
+}
+
+/* Scroll Bar Styling */
+.scroll-bar:vertical,
+.scroll-bar:horizontal {
+  -fx-background-color: transparent;
+}
+
+.scroll-bar:vertical .thumb,
+.scroll-bar:horizontal .thumb {
+  -fx-background-color: #b0c4de;
+  -fx-background-radius: 5em;
+}
+
+.scroll-bar:vertical .thumb:hover,
+.scroll-bar:horizontal .thumb:hover {
+  -fx-background-color: #0078d7;
+}
+
+/* Progress Indicator Styling */
+.progress-indicator {
+  -fx-progress-color: #0078d7;
+}
+
+/* Tooltip Styling */
+.tooltip {
+  -fx-background-color: #333333;
+  -fx-text-fill: white;
+  -fx-font-size: 12px;
+  -fx-padding: 5 10 5 10;
+  -fx-background-radius: 3;
+}
+
+/* Focus Styling */
+.focus-indicator {
+  -fx-focus-color: #0078d7;
+  -fx-faint-focus-color: #0078d720;
+}
+
+/* Disabled State Styling */
+.button:disabled,
+.text-input:disabled {
+  -fx-opacity: 0.5;
+}
+
+/* Placeholder Text Styling */
+.text-input,
+.password-field {
+  -fx-prompt-text-fill: #999999;
+}
+
+/* Selection Styling */
+.text-input:selected {
+  -fx-highlight-fill: #0078d7;
+  -fx-highlight-text-fill: white;
+}

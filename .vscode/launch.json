@@ -1,0 +1,119 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "ESP32CamMJPEGViewer",
+      "request": "launch",
+      "mainClass": "com.example.ESP32CamMJPEGViewer",
+      "projectName": "aerodronics",
+      "vmArgs": "--module-path lib/ --add-modules javafx.controls,javafx.fxml,javafx.web,javafx.swing"
+    },
+    {
+      "type": "java",
+      "name": "Esp32CamViewer",
+      "request": "launch",
+      "mainClass": "com.example.Esp32CamViewer",
+      "projectName": "aerodronics",
+      "vmArgs": "--module-path lib/ --add-modules javafx.controls,javafx.fxml,javafx.web,javafx.swing"
+    },
+    {
+      "type": "java",
+      "name": "Dashboard",
+      "request": "launch",
+      "mainClass": "com.example.Dashboard",
+      "projectName": "aerodronics"
+    },
+    {
+      "type": "java",
+      "name": "App",
+      "request": "launch",
+      "mainClass": "com.example.App",
+      "projectName": "aerodronics",
+      "vmArgs": "--module-path lib/ --add-modules javafx.controls,javafx.fxml,javafx.web,javafx.swing"
+    },
+    {
+      "type": "java",
+      "name": "FireBaseService",
+      "request": "launch",
+      "mainClass": "FireBaseService",
+      "projectName": "drone-monitor"
+    },
+    {
+      "type": "java",
+      "name": "FireBaseService",
+      "request": "launch",
+      "mainClass": "FireBaseService",
+      "projectName": "PracSynergy_9cd54b5f"
+    },
+    {
+      "type": "java",
+      "name": "LoginApp",
+      "request": "launch",
+      "mainClass": "LoginApp",
+      "projectName": "PracSynergy_9cd54b5f"
+    },
+    {
+      "type": "java",
+      "name": "Current File",
+      "request": "launch",
+      "mainClass": "App",
+      "vmArgs": "--module-path lib/ --add-modules javafx.controls,javafx.fxml,javafx.web",
+      "args": ""
+    },
+    {
+      "type": "java",
+      "name": "app1",
+      "request": "launch",
+      "mainClass": "app1",
+      "vmArgs": "--module-path lib/ --add-modules javafx.controls,javafx.fxml",
+      "args": ""
+    },
+    {
+      "type": "java",
+      "name": "AerodronicsApp",
+      "request": "launch",
+      "mainClass": "AerodronicsApp",
+      "projectName": "PracSynergy_9cd54b5f"
+    },
+    {
+      "type": "java",
+      "name": "Main",
+      "request": "launch",
+      "mainClass": "src.main.java.com.aerodronics.Main",
+      "projectName": "PracSynergy_9cd54b5f"
+    },
+    {
+      "type": "java",
+      "name": "Current File",
+      "request": "launch",
+      "mainClass": "app",
+      "vmArgs": "--module-path lib/ --add-modules javafx.controls,javafx.fxml",
+      "args": ""
+    },
+    {
+      "type": "java",
+      "name": "app1",
+      "request": "launch",
+      "mainClass": "app1",
+      "vmArgs": "--module-path lib/ --add-modules javafx.controls,javafx.fxml",
+      "args": ""
+    },
+    {
+      "type": "java",
+      "name": "AerodronicsApp",
+      "request": "launch",
+      "mainClass": "AerodronicsApp",
+      "vmArgs": "--module-path lib/ --add-modules javafx.controls,javafx.fxml",
+      "args": ""
+    },
+    {
+      "type": "java",
+      "name": "app2",
+      "request": "launch",
+      "mainClass": "app2",
+      "vmArgs": "--module-path lib/ --add-modules javafx.controls,javafx.fxml",
+      "args": ""
+    }
+  ]
+}
