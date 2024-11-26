@@ -21,7 +21,7 @@ public class App extends Application {
     @Override
     public void start(Stage stage) {
         primaryStage = stage;
-        primaryStage.setTitle("Aerodronics");
+        primaryStage.setTitle("Aerodronix");
         
         // Set minimum dimensions
         primaryStage.setMinWidth(MIN_WIDTH);
