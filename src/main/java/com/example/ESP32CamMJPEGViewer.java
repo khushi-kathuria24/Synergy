@@ -16,7 +16,7 @@ import java.net.URL;
 
 public class ESP32CamMJPEGViewer extends Application {
 
-    private static final String STREAM_URL = "http://192.168.234.193:81/stream"; // Replace <ESP32-CAM-IP> with your ESP32-CAM IP address
+    private static final String STREAM_URL = "http://192.168.234.193:81/stream"; 
     private volatile boolean running = true;
 
     @Override
