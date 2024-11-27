@@ -14,7 +14,7 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-public class ESP32CamMJPEGViewer extends Application {
+public class TestEspMJPEGViewer extends Application {
 
     private static final String STREAM_URL = "http://192.168.234.193:81/stream"; 
     private volatile boolean running = true;

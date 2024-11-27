@@ -1,18 +1,32 @@
 package com.example;
 
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
-import javafx.scene.web.WebView;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
+import javafx.embed.swing.SwingFXUtils;
+import javafx.scene.image.ImageView;
+import javafx.scene.image.Image;
+
+
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.InputStream;
+import java.io.File;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class Dashboard {
     private BorderPane root;
-    private WebView liveFeed;
+    private ImageView liveFeedImageView;
     private Label connectionStatus;
     private String droneCamUrl;
+    private volatile boolean running;
 
     public Dashboard() {
         root = new BorderPane();
@@ -20,7 +34,7 @@ public class Dashboard {
         root.setStyle("-fx-background-color: linear-gradient(to bottom, #FFFFFF, #F8FAFC); -fx-padding: 10px;");
 
         // Update this with your ESP32-CAM stream URL
-        droneCamUrl = "http://esp32cam.local";
+        droneCamUrl = "http://192.168.234.193:81/stream"; // Replace with your ESP32-CAM IP
 
         // Create main layout structure using SplitPane for better resizing
         VBox headerBox = createResponsiveHeader();
@@ -29,18 +43,19 @@ public class Dashboard {
         root.setTop(headerBox);
         root.setCenter(mainContent);
 
-        // Initialize the connection
-        connectToDrone();
+        // Start the video stream
+        running = true;
+        startMJPEGStream();
 
         // Make the layout responsive
         makeResponsive();
     }
 
     private void makeResponsive() {
-        liveFeed.prefWidthProperty().bind(
+        liveFeedImageView.fitWidthProperty().bind(
             root.widthProperty().multiply(0.7).subtract(40)
         );
-        liveFeed.prefHeightProperty().bind(
+        liveFeedImageView.fitHeightProperty().bind(
             root.heightProperty().multiply(0.7).subtract(100)
         );
     }
@@ -68,10 +83,93 @@ public class Dashboard {
         headerBox.getChildren().addAll(header, connectionStatus);
         return headerBox;
     }
+    
+    private HBox createControlButtons() {
+        HBox controlBox = new HBox(10);
+        controlBox.setAlignment(Pos.CENTER);
+        controlBox.setPadding(new Insets(10));
+
+        // Reconnect Button
+        Button reconnectButton = createStyledButton("Reconnect", "#10B981");
+        reconnectButton.setOnAction(e -> reconnectToStream());
+
+        // Screenshot Button
+        Button screenshotButton = createStyledButton("Screenshot", "#3B82F6");
+        screenshotButton.setOnAction(e -> captureScreenshot());
+
+        controlBox.getChildren().addAll(reconnectButton, screenshotButton);
+        return controlBox;
+    }
+
+    private void reconnectToStream() {
+        // Update connection status
+        connectionStatus.setText("Status: Attempting to Reconnect...");
+        connectionStatus.setStyle("-fx-text-fill: #F59E0B;");
+
+        // Stop current stream
+        stopStream();
+
+        // Start a new stream
+        running = true;
+        startMJPEGStream();
+    }
+
+    private void captureScreenshot() {
+        try {
+            // Get the current image from the live feed
+            Image currentFrame = liveFeedImageView.getImage();
+            
+            if (currentFrame != null) {
+                // Generate unique filename with timestamp
+                String timestamp = LocalDateTime.now()
+                    .format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
+                String filename = "drone_screenshot_" + timestamp + ".png";
+                
+                // Use user's home directory for screenshots
+                File screenshotDir = new File(System.getProperty("user.home"), "Drone Screenshots");
+                
+                // Create directory if it doesn't exist
+                if (!screenshotDir.exists()) {
+                    screenshotDir.mkdirs();
+                }
+                
+                File outputFile = new File(screenshotDir, filename);
+    
+                // Convert JavaFX Image to BufferedImage
+                BufferedImage bufferedImage = SwingFXUtils.fromFXImage(currentFrame, null);
+    
+                // Save the image
+                ImageIO.write(bufferedImage, "png", outputFile);
+    
+                // Show confirmation dialog
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Screenshot Saved");
+                alert.setHeaderText(null);
+                alert.setContentText("Screenshot saved to: " + outputFile.getAbsolutePath());
+                alert.showAndWait();
+            } else {
+                // Show error if no image is available
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Screenshot Failed");
+                alert.setHeaderText(null);
+                alert.setContentText("No image available to capture.");
+                alert.showAndWait();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            
+            // Show error dialog
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Screenshot Error");
+            alert.setHeaderText(null);
+            alert.setContentText("Failed to save screenshot: " + e.getMessage());
+            alert.showAndWait();
+        }
+    }
 
     private SplitPane createResponsiveMainContent() {
         SplitPane splitPane = new SplitPane();
-        
+
         // Create left side with video feed and controls
         VBox leftContent = new VBox(20);
         leftContent.setPadding(new Insets(20));
@@ -81,15 +179,17 @@ public class Dashboard {
             -fx-background-radius: 8px;
         """);
 
-        // Video feed with WebView
-        liveFeed = new WebView();
-        liveFeed.setMinSize(640, 480);
-        VBox.setVgrow(liveFeed, Priority.ALWAYS);
+        // Video feed with ImageView
+        liveFeedImageView = new ImageView();
+        liveFeedImageView.setPreserveRatio(true);
+        liveFeedImageView.setFitWidth(640);
+        liveFeedImageView.setFitHeight(480);
+        VBox.setVgrow(liveFeedImageView, Priority.ALWAYS);
 
-        // Create main controls
-        VBox controlsContainer = createControlButtons();
+        // Add control buttons below the video feed
+        HBox controlButtons = createControlButtons();
 
-        leftContent.getChildren().addAll(liveFeed, controlsContainer);
+        leftContent.getChildren().addAll(liveFeedImageView, controlButtons);
 
         // Create right side with stats and settings
         ScrollPane rightScrollPane = new ScrollPane(createResponsiveSidebarWithSettings());
@@ -101,29 +201,6 @@ public class Dashboard {
         splitPane.setDividerPositions(0.75);
 
         return splitPane;
-    }
-
-    private VBox createControlButtons() {
-        VBox controlsContainer = new VBox(10);
-        controlsContainer.setStyle("""
-            -fx-background-color: linear-gradient(to bottom, #F1F5F9, #E2E8F0);
-            -fx-padding: 15px;
-            -fx-background-radius: 8px;
-            -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 4, 0, 0, 0);
-        """);
-
-        HBox controls = new HBox(10);
-        controls.setAlignment(Pos.CENTER);
-
-        Button reconnectButton = createStyledButton("Reconnect", "#60A5FA");
-        Button captureButton = createStyledButton("Capture Photo", "#818CF8");
-
-        reconnectButton.setOnAction(e -> connectToDrone());
-        captureButton.setOnAction(e -> captureScreenshot());
-
-        controls.getChildren().addAll(reconnectButton, captureButton);
-        controlsContainer.getChildren().add(controls);
-        return controlsContainer;
     }
 
     private Button createStyledButton(String text, String color) {
@@ -147,6 +224,7 @@ public class Dashboard {
 
         return button;
     }
+
 
     private VBox createResponsiveSidebarWithSettings() {
         VBox sidebar = new VBox(15);
@@ -249,51 +327,281 @@ public class Dashboard {
         return statBox;
     }
 
-    private void connectToDrone() {
-        try {
-            liveFeed.getEngine().load(droneCamUrl);
-            connectionStatus.setText("Status: Connected");
-            connectionStatus.setStyle("-fx-text-fill: #10B981;");
-            showSuccess("Connection Successful", "Successfully connected to the drone.");
-        } catch (Exception e) {
-            connectionStatus.setText("Status: Connection Failed");
-            connectionStatus.setStyle("-fx-text-fill: #EF4444;");
-            showError("Connection Error", "Failed to connect to drone camera. Please check the connection and try again.");
+    private void startMJPEGStream() {
+        Thread videoThread = new Thread(() -> {
+            try {
+                URL url = new URL(droneCamUrl);
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                connection.setRequestProperty("User-Agent", "JavaFX-MJPEG-Viewer");
+                connection.setRequestProperty("Accept", "multipart/x-mixed-replace");
+                connection.connect();
+
+                InputStream inputStream = connection.getInputStream();
+                while (running) {
+                    BufferedImage frame = readMJPEGFrame(inputStream);
+                    if (frame != null) {
+                        Platform.runLater(() -> liveFeedImageView.setImage(SwingFXUtils.toFXImage(frame, null)));
+                    }
+                }
+                connection.disconnect();
+            } catch (Exception e) {
+                Platform.runLater(() -> {
+                    connectionStatus.setText("Status: Connection Failed");
+                    connectionStatus.setStyle("-fx-text-fill: #E74C3C;");
+                });
+                e.printStackTrace();
+            }
+        });
+        videoThread.setDaemon(true);
+        videoThread.start();
+    }
+
+    private BufferedImage readMJPEGFrame(InputStream inputStream) throws Exception {
+        String boundary = "--"; // Default boundary prefix
+        while (true) {
+            int ch;
+            StringBuilder header = new StringBuilder();
+            while ((ch = inputStream.read()) != -1 && header.length() < 10000) {
+                header.append((char) ch);
+                if (header.toString().contains(boundary)) {
+                    break;
+                }
+            }
+            if (header.toString().contains(boundary)) {
+                String contentLengthHeader = "Content-Length: ";
+                int contentLength = -1;
+                while ((ch = inputStream.read()) != -1) {
+                    header.append((char) ch);
+                    if (header.toString().endsWith("\r\n\r\n")) {
+                        String[] lines = header.toString().split("\r\n");
+                        for (String line : lines) {
+                            if (line.startsWith(contentLengthHeader)) {
+                                contentLength = Integer.parseInt(line.substring(contentLengthHeader.length()));
+                                break;
+                            }
+                        }
+                        break;
+                    }
+                }
+                if (contentLength > 0) {
+                    byte[] imageData = new byte[contentLength];
+                    int bytesRead = 0;
+                    while (bytesRead < contentLength) {
+                        bytesRead += inputStream.read(imageData, bytesRead, contentLength - bytesRead);
+                    }
+                    return ImageIO.read(new java.io.ByteArrayInputStream(imageData));
+                }
+            }
         }
-    }
-
-    private void captureScreenshot() {
-        showInfo("Screenshot Captured", "Image saved to gallery");
-    }
-
-    private void showError(String title, String content) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(content);
-        alert.getDialogPane().setStyle("-fx-background-color: #FEE2E2;");
-        alert.showAndWait();
-    }
-
-    private void showSuccess(String title, String content) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(content);
-        alert.getDialogPane().setStyle("-fx-background-color: #DCFCE7;");
-        alert.showAndWait();
-    }
-
-    private void showInfo(String title, String content) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(content);
-        alert.getDialogPane().setStyle("-fx-background-color: #F1F5F9;");
-        alert.showAndWait();
     }
 
     public BorderPane getRoot() {
         return root;
     }
+
+    public void stopStream() {
+        running = false;
+    }
 }
+
+
+
+// Test dashboard 1 
+// package com.example;
+// import javafx.application.Platform;
+// import javafx.embed.swing.SwingFXUtils;
+// import javafx.geometry.Insets;
+// import javafx.geometry.Pos;
+// import javafx.scene.control.*;
+// import javafx.scene.image.Image;
+// import javafx.scene.image.ImageView;
+// import javafx.scene.layout.*;
+// import javafx.scene.text.Font;
+// import javafx.scene.text.FontWeight;
+
+// import javax.imageio.ImageIO;
+// import java.awt.image.BufferedImage;
+// import java.io.InputStream;
+// import java.net.HttpURLConnection;
+// import java.net.URL;
+
+// public class Dashboard {
+//     private BorderPane root;
+//     private Label connectionStatus;
+//     private Button reconnectButton;
+//     private String droneCamUrl;
+//     private ImageView liveFeedImageView;
+//     private volatile boolean running;
+
+//     public Dashboard() {
+//         root = new BorderPane();
+//         root.getStyleClass().add("dashboard-background");
+
+//         // Configure the layout
+//         root.setStyle("-fx-padding: 10px;");
+
+//         // Update this with your ESP32-CAM stream URL
+//         droneCamUrl = "http://192.168.234.193:81/stream"; // Replace with your ESP32-CAM IP
+
+//         // Create header, main content, and sidebar
+//         VBox headerBox = createResponsiveHeader();
+//         VBox mainContent = createResponsiveMainContent();
+//         VBox sidebar = createResponsiveSidebar();
+
+//         // Add these sections to the root layout
+//         root.setTop(headerBox);
+//         root.setCenter(mainContent);
+//         root.setRight(sidebar);
+
+//         // Start the video stream
+//         running = true;
+//         startMJPEGStream();
+//     }
+
+//     private VBox createResponsiveHeader() {
+//         VBox headerBox = new VBox(10);
+//         headerBox.setPadding(new Insets(20));
+//         headerBox.setStyle("-fx-background-color: #2C3E50;");
+
+//         Label header = new Label("Drone Live Feed");
+//         header.setFont(Font.font("Segoe UI", FontWeight.BOLD, 24));
+//         header.setStyle("-fx-text-fill: white;");
+//         header.setMaxWidth(Double.MAX_VALUE);
+//         header.setAlignment(Pos.CENTER);
+
+//         connectionStatus = new Label("Status: Connecting...");
+//         connectionStatus.setStyle("-fx-text-fill: #ECF0F1;");
+//         connectionStatus.setMaxWidth(Double.MAX_VALUE);
+//         connectionStatus.setAlignment(Pos.CENTER);
+
+//         headerBox.getChildren().addAll(header, connectionStatus);
+//         return headerBox;
+//     }
+
+//     private VBox createResponsiveMainContent() {
+//         VBox mainContent = new VBox(10);
+//         mainContent.setPadding(new Insets(20));
+//         mainContent.setAlignment(Pos.CENTER);
+
+//         liveFeedImageView = new ImageView();
+//         liveFeedImageView.setPreserveRatio(true);
+//         liveFeedImageView.setFitWidth(640);
+//         liveFeedImageView.setFitHeight(480);
+
+//         mainContent.getChildren().add(liveFeedImageView);
+//         return mainContent;
+//     }
+
+//     private VBox createResponsiveSidebar() {
+//         VBox sidebar = new VBox(15);
+//         sidebar.setPadding(new Insets(20));
+//         sidebar.setMinWidth(200);
+//         sidebar.setMaxWidth(300);
+//         sidebar.getStyleClass().add("sidebar");
+
+//         Label statsHeader = new Label("Drone Statistics");
+//         statsHeader.setFont(Font.font("Segoe UI", FontWeight.BOLD, 16));
+//         statsHeader.setAlignment(Pos.CENTER);
+
+//         VBox statsBox = new VBox(10);
+//         statsBox.getChildren().addAll(
+//             createResponsiveStatLabel("Battery Level:", "95%"),
+//             createResponsiveStatLabel("Signal Strength:", "Strong"),
+//             createResponsiveStatLabel("Resolution:", "1280x720"),
+//             createResponsiveStatLabel("Frame Rate:", "30 FPS")
+//         );
+
+//         sidebar.getChildren().addAll(statsHeader, statsBox);
+//         return sidebar;
+//     }
+
+//     private HBox createResponsiveStatLabel(String name, String value) {
+//         HBox statBox = new HBox(10);
+//         statBox.setAlignment(Pos.CENTER_LEFT);
+
+//         Label nameLabel = new Label(name);
+//         nameLabel.setStyle("-fx-font-weight: bold;");
+
+//         Label valueLabel = new Label(value);
+//         valueLabel.getStyleClass().add("stat-value");
+
+//         statBox.getChildren().addAll(nameLabel, valueLabel);
+//         return statBox;
+//     }
+
+//     private void startMJPEGStream() {
+//         Thread videoThread = new Thread(() -> {
+//             try {
+//                 URL url = new URL(droneCamUrl);
+//                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+//                 connection.setRequestProperty("User-Agent", "JavaFX-MJPEG-Viewer");
+//                 connection.setRequestProperty("Accept", "multipart/x-mixed-replace");
+//                 connection.connect();
+
+//                 InputStream inputStream = connection.getInputStream();
+//                 while (running) {
+//                     BufferedImage frame = readMJPEGFrame(inputStream);
+//                     if (frame != null) {
+//                         Platform.runLater(() -> liveFeedImageView.setImage(SwingFXUtils.toFXImage(frame, null)));
+//                     }
+//                 }
+//                 connection.disconnect();
+//             } catch (Exception e) {
+//                 Platform.runLater(() -> {
+//                     connectionStatus.setText("Status: Connection Failed");
+//                     connectionStatus.setStyle("-fx-text-fill: #E74C3C;");
+//                 });
+//                 e.printStackTrace();
+//             }
+//         });
+//         videoThread.setDaemon(true);
+//         videoThread.start();
+//     }
+
+//     private BufferedImage readMJPEGFrame(InputStream inputStream) throws Exception {
+//         String boundary = "--"; // Default boundary prefix
+//         while (true) {
+//             int ch;
+//             StringBuilder header = new StringBuilder();
+//             while ((ch = inputStream.read()) != -1 && header.length() < 10000) {
+//                 header.append((char) ch);
+//                 if (header.toString().contains(boundary)) {
+//                     break;
+//                 }
+//             }
+//             if (header.toString().contains(boundary)) {
+//                 String contentLengthHeader = "Content-Length: ";
+//                 int contentLength = -1;
+//                 while ((ch = inputStream.read()) != -1) {
+//                     header.append((char) ch);
+//                     if (header.toString().endsWith("\r\n\r\n")) {
+//                         String[] lines = header.toString().split("\r\n");
+//                         for (String line : lines) {
+//                             if (line.startsWith(contentLengthHeader)) {
+//                                 contentLength = Integer.parseInt(line.substring(contentLengthHeader.length()));
+//                                 break;
+//                             }
+//                         }
+//                         break;
+//                     }
+//                 }
+//                 if (contentLength > 0) {
+//                     byte[] imageData = new byte[contentLength];
+//                     int bytesRead = 0;
+//                     while (bytesRead < contentLength) {
+//                         bytesRead += inputStream.read(imageData, bytesRead, contentLength - bytesRead);
+//                     }
+//                     return ImageIO.read(new java.io.ByteArrayInputStream(imageData));
+//                 }
+//             }
+//         }
+//     }
+
+//     public BorderPane getRoot() {
+//         return root;
+//     }
+
+//     public void stopStream() {
+//         running = false;
+//     }
+// }
