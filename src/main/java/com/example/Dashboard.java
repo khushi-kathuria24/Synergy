@@ -94,7 +94,7 @@ public class Dashboard {
         reconnectButton.setOnAction(e -> reconnectToStream());
 
         // Screenshot Button
-        Button screenshotButton = createStyledButton("Screenshot", "#3B82F6");
+        Button screenshotButton = createStyledButton("Capture", "#3B82F6");
         screenshotButton.setOnAction(e -> captureScreenshot());
 
         controlBox.getChildren().addAll(reconnectButton, screenshotButton);
