@@ -3,6 +3,13 @@
   "configurations": [
     {
       "type": "java",
+      "name": "TestEspMJPEGViewer",
+      "request": "launch",
+      "mainClass": "com.example.TestEspMJPEGViewer",
+      "projectName": "aerodronics"
+    },
+    {
+      "type": "java",
       "name": "ESP32CamMJPEGViewer",
       "request": "launch",
       "mainClass": "com.example.ESP32CamMJPEGViewer",
